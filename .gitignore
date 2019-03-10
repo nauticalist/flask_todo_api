@@ -1,0 +1,7 @@
+#Ignore all cache files
+*.pyc
+!spec/*.pyc
+/__pycache__/*
+
+#Ignore local python37 environment
+/.env
