@@ -1,7 +1,7 @@
 from flask import Blueprint, abort
 
 from flask_restful import (Resource, Api, reqparse, fields,
-                           url_for, marshal)
+                           url_for, marshal, inputs)
 
 import models
 
@@ -30,6 +30,9 @@ class TodoList(Resource):
     Todo list resources
     """
     def __init__(self):
+        """
+        Define input arguments for parser
+        """
         self.reqparse = reqparse.RequestParser()
         self.reqparse.add_argument(
             'name',
@@ -39,21 +42,27 @@ class TodoList(Resource):
         )
         self.reqparse.add_argument(
             'completed',
-            required=True,
-            help='Task status not provided!',
+            required=False,
+            help='Invalid task status provided!',
+            type=inputs.boolean,
+            default=False,
             location=['form', 'json']
         )
         super().__init__()
 
     def get(self):
+        """
+        Get all todos
+        """
         todos = [marshal(todo, todo_fields)
                  for todo in models.Todo.select()]
         return (todos, 200)
 
     def post(self):
+        """
+        Get post data to create a todo item
+        """
         args = self.reqparse.parse_args()
-        if args.completed == 'False':
-            args.completed = False
         todo = models.Todo.create(**args)
         context = marshal(todo, todo_fields)
         headers = {'Location': url_for('resources.todos.todo', id=todo.id)}
@@ -61,7 +70,13 @@ class TodoList(Resource):
 
 
 class Todo(Resource):
+    """
+    Todo object related tasks
+    """
     def __init__(self):
+        """
+        Define input arguments for parser
+        """
         self.reqparse = reqparse.RequestParser()
         self.reqparse.add_argument(
             'name',
@@ -71,21 +86,27 @@ class Todo(Resource):
         )
         self.reqparse.add_argument(
             'completed',
-            required=True,
-            help='Task status not provided!',
+            required=False,
+            help='Invalid task status provided!',
+            type=inputs.boolean,
+            default=False,
             location=['form', 'json']
         )
         super().__init__()
 
     def get(self, id):
+        """
+        Get single todo by id
+        """
         context = marshal(todo_or_404(id), todo_fields)
         headers = {'Location': url_for('resources.todos.todo', id=id)}
         return (context, 200, headers)
 
     def put(self, id):
+        """
+        Update a todo item
+        """
         args = self.reqparse.parse_args()
-        if args.completed == 'False':
-            args.completed = False
         query = models.Todo.update(**args).where(models.Todo.id == id)
         query.execute()
         context = marshal(todo_or_404(id), todo_fields)
@@ -93,6 +114,9 @@ class Todo(Resource):
         return (context, 200, headers)
 
     def delete(self, id):
+        """
+        Delete a todo item
+        """
         query = models.Todo.delete().where(models.Todo.id == id)
         query.execute()
         headers = {'Location': url_for('resources.todos.todos')}
