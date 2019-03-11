@@ -77,6 +77,11 @@ class Todo(Resource):
         )
         super().__init__()
 
+    def get(self, id):
+        context = marshal(todo_or_404(id), todo_fields)
+        headers = {'Location': url_for('resources.todos.todo', id=id)}
+        return (context, 200, headers)
+
     def put(self, id):
         args = self.reqparse.parse_args()
         if args.completed == 'False':
