@@ -1,4 +1,4 @@
-# Project 1: Flask Todo App
+# Project 10: Flask Todo App
 
 ## Dependencies
 
